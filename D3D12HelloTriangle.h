@@ -13,6 +13,11 @@
 
 #include "DXSample.h"
 
+
+
+
+
+
 using namespace DirectX;
 
 // Note that while ComPtr is used to manage the lifetime of resources on the CPU,
@@ -34,11 +39,14 @@ public:
 
 private:
     static const UINT FrameCount = 2;
+    static const UINT TextureWidth = 256;
+    static const UINT TextureHeight = 256;
+    static const UINT TexturePixelSize = 4;    // The number of bytes used to represent a pixel in the texture.
 
     struct Vertex
     {
         XMFLOAT3 position;
-        XMFLOAT4 color;
+        XMFLOAT2 uv;
     };
 
     // Pipeline objects.
@@ -47,17 +55,29 @@ private:
     ComPtr<IDXGISwapChain3> m_swapChain;
     ComPtr<ID3D12Device> m_device;
     ComPtr<ID3D12Resource> m_renderTargets[FrameCount];
+    ComPtr<ID3D12Resource> m_depthStencilBuffer;
     ComPtr<ID3D12CommandAllocator> m_commandAllocator;
     ComPtr<ID3D12CommandQueue> m_commandQueue;
     ComPtr<ID3D12RootSignature> m_rootSignature;
+    ComPtr<ID3D12RootSignature> m_postProcessRootSignature;
     ComPtr<ID3D12DescriptorHeap> m_rtvHeap;
+    ComPtr<ID3D12DescriptorHeap> m_srvHeap;
+    ComPtr<ID3D12DescriptorHeap> m_dsvHeap;
     ComPtr<ID3D12PipelineState> m_pipelineState;
     ComPtr<ID3D12GraphicsCommandList> m_commandList;
     UINT m_rtvDescriptorSize;
+    UINT m_dsvDescriptorSize;
+    UINT m_srvDescriptorSize;
 
     // App resources.
     ComPtr<ID3D12Resource> m_vertexBuffer;
     D3D12_VERTEX_BUFFER_VIEW m_vertexBufferView;
+    ComPtr<ID3D12Resource> m_texture;
+    ComPtr<ID3D12Resource> m_postProcessTarget;
+    ComPtr<ID3D12PipelineState> m_horizontalBlurState;
+    ComPtr<ID3D12PipelineState> m_verticalBlurState;
+
+
 
     // Synchronization objects.
     UINT m_frameIndex;
@@ -67,6 +87,8 @@ private:
 
     void LoadPipeline();
     void LoadAssets();
+    std::vector<UINT8> GenerateTextureData();
     void PopulateCommandList();
     void WaitForPreviousFrame();
 };
+
